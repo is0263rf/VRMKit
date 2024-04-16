@@ -60,9 +60,9 @@ class VRM1Tests: XCTestCase {
     
     func testLookAt() {
         XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone.count, 3)
-        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[0].value, 0)
-        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[1].value, 0.07764859)
-        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[2].value, 0.100730225)
+        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[0], 0)
+        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[1], 0.07764859)
+        XCTAssertEqual(vrm.lookAt?.offsetFromHeadBone[2], 0.100730225)
         XCTAssertEqual(vrm.lookAt?.type, .expression)
         XCTAssertEqual(vrm.lookAt?.rangeMapHorizontalInner.inputMaxValue, 90)
         XCTAssertEqual(vrm.lookAt?.rangeMapHorizontalInner.outputScale, 1)

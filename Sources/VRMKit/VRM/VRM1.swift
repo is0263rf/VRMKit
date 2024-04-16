@@ -180,7 +180,7 @@ public extension VRM1 {
     }
 
     struct LookAt: Codable {
-        public let offsetFromHeadBone:[Either<Int, Double>]
+        public let offsetFromHeadBone:[Double]
         public let type: LookAtType
         public let rangeMapHorizontalInner: LookAtRangeMap
         public let rangeMapHorizontalOuter: LookAtRangeMap
@@ -211,7 +211,7 @@ public extension VRM1 {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            offsetFromHeadBone = try container.decode([Either<Int, Double>].self, forKey: .offsetFromHeadBone)
+            offsetFromHeadBone = try container.decode([Double].self, forKey: .offsetFromHeadBone)
             type = try container.decode(LookAtType.self, forKey: .type)
             rangeMapHorizontalInner = try container.decode(LookAtRangeMap.self, forKey: .rangeMapHorizontalInner)
             rangeMapHorizontalOuter = try container.decode(LookAtRangeMap.self, forKey: .rangeMapHorizontalOuter)
