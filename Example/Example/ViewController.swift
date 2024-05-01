@@ -26,7 +26,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         do {
-            let loader = try VRMSceneLoader(named: "AliciaSolid.vrm")
+            let loader = try VRMSceneLoader(named: "Seed-san.vrm")
             let scene = try loader.loadScene()
             setupScene(scene)
             scnView.scene = scene

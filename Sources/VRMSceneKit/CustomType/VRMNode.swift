@@ -10,14 +10,14 @@ import SceneKit
 import VRMKit
 
 open class VRMNode: SCNNode {
-    public let vrm: VRM
+    public let vrm: VRMFile
     public let humanoid = Humanoid()
     private let timer = Timer()
     private var springBones: [VRMSpringBone] = []
 
     var blendShapeClips: [BlendShapeKey: BlendShapeClip] = [:]
 
-    public init(vrm: VRM) {
+    public init(vrm: VRMFile) {
         self.vrm = vrm
         super.init()
     }
@@ -27,49 +27,55 @@ open class VRMNode: SCNNode {
     }
 
     func setUpHumanoid(nodes: [SCNNode?]) {
-        humanoid.setUp(humanoid: vrm.humanoid, nodes: nodes)
+        if let vrm0 = vrm as? VRM {
+            humanoid.setUp(humanoid: vrm0.humanoid, nodes: nodes)
+        }
     }
 
     func setUpBlendShapes(meshes: [SCNNode?]) {
-        blendShapeClips = vrm.blendShapeMaster.blendShapeGroups
-            .map { group in
-                let blendShapeBinding: [BlendShapeBinding] = group.binds?
-                    .compactMap {
-                        guard let mesh = meshes[$0.mesh] else {
-                            return nil
-                        }
-                        return BlendShapeBinding(mesh: mesh, index: $0.index, weight: $0.weight)
-                    } ?? []
-                return BlendShapeClip(name: group.name,
-                                      preset: BlendShapePreset(name: group.presetName),
-                                      values: blendShapeBinding,
-                                      isBinary: group.isBinary)
+        if let vrm0 = vrm as? VRM {
+            blendShapeClips = vrm0.blendShapeMaster.blendShapeGroups
+                .map { group in
+                    let blendShapeBinding: [BlendShapeBinding] = group.binds?
+                        .compactMap {
+                            guard let mesh = meshes[$0.mesh] else {
+                                return nil
+                            }
+                            return BlendShapeBinding(mesh: mesh, index: $0.index, weight: $0.weight)
+                        } ?? []
+                    return BlendShapeClip(name: group.name,
+                                          preset: BlendShapePreset(name: group.presetName),
+                                          values: blendShapeBinding,
+                                          isBinary: group.isBinary)
+                }
+                .reduce(into: [:]) { result, clip in
+                    result[clip.key] = clip
             }
-            .reduce(into: [:]) { result, clip in
-                result[clip.key] = clip
         }
     }
     
     func setUpSpringBones(loader: VRMSceneLoader) throws {
         var springBones: [VRMSpringBone] = []
-        let secondaryAnimation = vrm.secondaryAnimation
-        for boneGroup in secondaryAnimation.boneGroups {
-            guard !boneGroup.bones.isEmpty else { return }
-            let rootBones: [SCNNode] = try boneGroup.bones.compactMap({ try loader.node(withNodeIndex: $0) }).compactMap({ $0 })
-            let centerNode = try? loader.node(withNodeIndex: boneGroup.center)
-            let colliderGroups = try secondaryAnimation.colliderGroups.map({ try VRMSpringBoneColliderGroup(colliderGroup: $0, loader: loader) })
-            let springBone = VRMSpringBone(center: centerNode,
-                                           rootBones: rootBones,
-                                           comment: boneGroup.comment,
-                                           stiffnessForce: Float(boneGroup.stiffiness),
-                                           gravityPower: Float(boneGroup.gravityPower),
-                                           gravityDir: boneGroup.gravityDir.simd,
-                                           dragForce: Float(boneGroup.dragForce),
-                                           hitRadius: Float(boneGroup.hitRadius),
-                                           colliderGroups: colliderGroups)
-            springBones.append(springBone)
+        if let vrm0 = vrm as? VRM {
+            let secondaryAnimation = vrm0.secondaryAnimation
+            for boneGroup in secondaryAnimation.boneGroups {
+                guard !boneGroup.bones.isEmpty else { return }
+                let rootBones: [SCNNode] = try boneGroup.bones.compactMap({ try loader.node(withNodeIndex: $0) }).compactMap({ $0 })
+                let centerNode = try? loader.node(withNodeIndex: boneGroup.center)
+                let colliderGroups = try secondaryAnimation.colliderGroups.map({ try VRMSpringBoneColliderGroup(colliderGroup: $0, loader: loader) })
+                let springBone = VRMSpringBone(center: centerNode,
+                                               rootBones: rootBones,
+                                               comment: boneGroup.comment,
+                                               stiffnessForce: Float(boneGroup.stiffiness),
+                                               gravityPower: Float(boneGroup.gravityPower),
+                                               gravityDir: boneGroup.gravityDir.simd,
+                                               dragForce: Float(boneGroup.dragForce),
+                                               hitRadius: Float(boneGroup.hitRadius),
+                                               colliderGroups: colliderGroups)
+                springBones.append(springBone)
+            }
+            self.springBones = springBones
         }
-        self.springBones = springBones
     }
 
     /// Set blend shapes to avatar

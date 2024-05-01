@@ -10,10 +10,12 @@ import VRMKit
 import Foundation
 
 extension Data {
-    init(buffer: GLTF.Buffer, relativeTo rootDirectory: URL?, vrm: VRM) throws {
+    init(buffer: GLTF.Buffer, relativeTo rootDirectory: URL?, vrm: VRMFile) throws {
         if let uri = buffer.uri {
             self = try Data(gltfUrlString: uri, relativeTo: rootDirectory)
-        } else if let data = vrm.gltf.binaryBuffer {
+        } else if let vrm0 = vrm as? VRM, let data = vrm0.gltf.binaryBuffer {
+            self = data
+        } else if let vrm1 = vrm as? VRM1, let data = vrm1.gltf.binaryBuffer {
             self = data
         } else {
             throw VRMError._dataInconsistent("failed to load buffers")

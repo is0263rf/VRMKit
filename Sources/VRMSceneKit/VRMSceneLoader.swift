@@ -12,15 +12,19 @@ import SceneKit
 import SpriteKit
 
 open class VRMSceneLoader {
-    let vrm: VRM
+    let vrm: VRMFile
     private let gltf: GLTF
     private let sceneData: SceneData
 
     private var rootDirectory: URL? = nil
 
-    public init(vrm: VRM, rootDirectory: URL? = nil) {
+    public init(vrm: VRMFile, rootDirectory: URL? = nil) {
         self.vrm = vrm
-        self.gltf = vrm.gltf.jsonData
+        if let vrm0 = vrm as? VRM {
+            self.gltf = vrm0.gltf.jsonData
+        } else {
+            self.gltf = (vrm as! VRM1).gltf.jsonData
+        }
         self.rootDirectory = rootDirectory
         self.sceneData = SceneData(vrm: gltf)
     }
@@ -40,6 +44,9 @@ open class VRMSceneLoader {
         vrmNode.setUpHumanoid(nodes: sceneData.nodes)
         vrmNode.setUpBlendShapes(meshes: sceneData.meshes)
         try vrmNode.setUpSpringBones(loader: self)
+        if vrm is VRM1 {
+            vrmNode.rotation = .init(x: 0, y: 1, z: 0, w: Float.pi)
+        }
 
         let scnScene = VRMScene(node: vrmNode)
         sceneData.scenes[index] = scnScene
@@ -47,9 +54,17 @@ open class VRMSceneLoader {
     }
 
     public func loadThumbnail() throws -> UIImage? {
-        guard let textureIndex = vrm.meta.texture else { return nil }
-        if let cache = try sceneData.load(\.images, index: textureIndex) { return cache }
-        return try image(withImageIndex: textureIndex)
+        if let vrm0 = vrm as? VRM {
+            guard let textureIndex = vrm0.meta.texture else { return nil }
+            if let cache = try sceneData.load(\.images, index: textureIndex) { return cache }
+            return try image(withImageIndex: textureIndex)
+        } else if let vrm1 = vrm as? VRM1 {
+            guard let textureIndex = vrm1.meta.thumbnailImage else { return nil }
+            if let cache = try sceneData.load(\.images, index: textureIndex) { return cache }
+            return try image(withImageIndex: textureIndex)
+        }
+
+        return nil
     }
 
     func node(withNodeIndex index: Int) throws -> SCNNode {

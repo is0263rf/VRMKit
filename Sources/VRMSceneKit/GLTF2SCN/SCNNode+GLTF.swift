@@ -80,8 +80,8 @@ extension SCNNode {
                 node.geometry = geometry
 
                 // FIXME/TODO:
-                if let name = geometry.materials[0].name,
-                    let property = loader.vrm.materialPropertyNameMap[name],
+                if let name = geometry.materials[0].name, let vrm0 = loader.vrm as? VRM,
+                    let property = vrm0.materialPropertyNameMap[name],
                     property.renderQueue != -1 {
                     let lastRenderingOrder = childNodes.last?.renderingOrder ?? 0
                     node.renderingOrder = lastRenderingOrder == 0 ? property.renderQueue : property.renderQueue + 1

@@ -22,7 +22,7 @@ extension SCNMaterial {
 
         var shader: VRM.MaterialProperty.Shader?
 
-        if let name = name, let property = loader.vrm.materialPropertyNameMap[name] {
+        if let name = name, let vrm0 = loader.vrm as? VRM, let property = vrm0.materialPropertyNameMap[name] {
             shader = property.vrmShader
             // FIXME/TODO: https://dwango.github.io/vrm/vrm_spec/#vrm%E3%81%8C%E6%8F%90%E4%BE%9B%E3%81%99%E3%82%8B%E3%82%B7%E3%82%A7%E3%83%BC%E3%83%80%E3%83%BC
             if shader == .unlitTransparent {
